@@ -39,7 +39,7 @@
     return `
       <section class="hero hero-branded panel">
         <div class="hero-copy"><span class="eyebrow">LIVE OPERATIONS</span><h2>${escapeHtml(meta?.server_name || "Local Response ERS")}</h2><p>Central status, administration and integration platform for the LRERS FiveM ecosystem.</p><div class="hero-status">${statusBadge(Boolean(status?.online))}${auth?.user ? `<span class="tag good">Discord: ${escapeHtml(auth.user.display_name)}</span>` : ""}</div></div>
-        <div class="hero-art"><img src="assets/img/lrers-server-logo.jpg" alt="Local Response ERS server logo"></div>
+        <div class="hero-art"><img src="assets/img/lrers-server-logo.png" alt="Local Response ERS server logo"></div>
       </section>
       <section class="metrics-grid">
         ${card("Players", count, status?.online ? "Current session" : "Server unavailable")}

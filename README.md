@@ -2,7 +2,7 @@
 
 GitHub Pages frontend for **Local Response ERS**.
 
-## v0.2.0
+## v0.2.1
 
 The website now includes the branded LRERS operations experience, live FiveM data, Discord OAuth sign-in UI, permission-aware admin surfaces, authenticated in-game announcements, protected allowlisted resource restarts, and the runtime audit log.
 
@@ -40,3 +40,10 @@ Admin authorization uses `BOT_OWNER_ID`, Discord Administrator permission, or ID
 ```text
 https://lrers-discord-bot-production.up.railway.app
 ```
+
+
+### v0.2.1 hotfix
+
+- Uses the actual Local Response ERS server artwork for sidebar, favicon/PWA icon and Overview hero branding.
+- Corrects the canonical GitHub Pages owner URL used by social metadata.
+- Bumps the service-worker cache so browsers receive the new branding immediately.

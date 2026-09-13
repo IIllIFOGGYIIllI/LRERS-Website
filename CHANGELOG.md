@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.1
+
+- Replaced generic shield branding with the actual Local Response ERS server artwork.
+- Added real-artwork favicon/PWA icon.
+- Corrected GitHub Pages canonical asset URL.
+- Bumped website/service-worker cache version.
+
 ## v0.2.0
 
 - Added the official Local Response ERS server artwork to the live Overview hero.
