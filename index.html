@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d14">
+  <meta name="description" content="Local Response ERS live server dashboard and administration portal.">
+  <title>Local Response ERS</title>
+  <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img src="assets/img/logo.svg" alt="" class="brand-logo">
+        <div>
+          <strong>Local Response ERS</strong>
+          <span>Server Operations</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <a href="#/overview" data-route="overview"><span>⌂</span> Overview</a>
+        <a href="#/server" data-route="server"><span>◉</span> Server</a>
+        <a href="#/players" data-route="players"><span>♟</span> Players</a>
+        <a href="#/resources" data-route="resources"><span>▦</span> Resources</a>
+        <div class="nav-divider">Administration</div>
+        <a href="#/admin" data-route="admin"><span>⚙</span> Admin Centre</a>
+        <a href="#/audit" data-route="audit"><span>≡</span> Audit Log</a>
+        <a href="#/integrations" data-route="integrations"><span>⌘</span> Integrations</a>
+        <a href="#/settings" data-route="settings"><span>⚒</span> Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="dot" id="apiDot"></span>
+        <span id="apiLabel">Connecting…</span>
+      </div>
+    </aside>
+
+    <section class="main-shell">
+      <header class="topbar">
+        <button class="icon-button mobile-only" id="menuButton" aria-label="Open menu">☰</button>
+        <div class="page-heading">
+          <h1 id="pageTitle">Overview</h1>
+          <p id="pageSubtitle">Live server operations at a glance.</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="server-pill" id="serverPill"><span class="dot"></span><span>Loading</span></div>
+          <a class="button ghost" id="connectTop" href="#" target="_blank" rel="noopener">Connect</a>
+        </div>
+      </header>
+      <main id="app" class="content" aria-live="polite"></main>
+      <footer class="footer">
+        <span>Local Response ERS Website <b id="websiteVersion">v0.1.0</b></span>
+        <span id="lastUpdated">Waiting for live data…</span>
+      </footer>
+    </section>
+  </div>
+
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/views.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

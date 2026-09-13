@@ -1,0 +1,9 @@
+{
+  "name": "Local Response ERS Operations",
+  "short_name": "LRERS",
+  "start_url": "./#/overview",
+  "display": "standalone",
+  "background_color": "#070a10",
+  "theme_color": "#090d14",
+  "icons": [{"src":"assets/img/logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
