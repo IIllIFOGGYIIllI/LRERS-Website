@@ -2,24 +2,16 @@
 
 GitHub Pages frontend for **Local Response ERS**.
 
-## v0.1.0
+## v0.2.0
 
-The first website foundation includes:
-
-- Live server Overview
-- FiveM server status and connection details
-- Current player roster
-- Live resource directory with search
-- PWA/installable web-app foundation
-- Planned Admin Centre, Audit, Integrations and Settings sections
-- Railway API integration with no secrets stored in the frontend
+The website now includes the branded LRERS operations experience, live FiveM data, Discord OAuth sign-in UI, permission-aware admin surfaces, authenticated in-game announcements, protected allowlisted resource restarts, and the runtime audit log.
 
 ## Architecture
 
 ```text
 GitHub Pages (LRERS Website)
         |
-        | HTTPS read-only API
+        | HTTPS public + bearer-session API
         v
 Railway (LRERS Discord Bot/API)
         |
@@ -27,25 +19,24 @@ Railway (LRERS Discord Bot/API)
 LRERS_DiscordBridge -> FiveM / txAdmin / LRERS resources
 ```
 
-The public website must never contain `DISCORD_TOKEN`, `BRIDGE_SECRET`, admin credentials, or other server secrets. Administrative website actions will be added later through authenticated Railway API routes using Discord OAuth and server-side role checks.
+The public website contains no bot tokens, bridge secrets, Discord OAuth client secrets, or FiveM identifiers. Discord authorization codes are exchanged by Railway. The browser receives only an opaque LRERS session token kept in `sessionStorage` for the current browser tab.
 
-## GitHub Pages
+## Discord OAuth setup
 
-1. Create a repository named `LRERS-Website`.
-2. Upload all files from this package to the repository root.
-3. Open **Settings -> Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**.
-5. Select `main` and `/ (root)`.
-6. Save.
+The matching LRERS Discord Bot v0.3.0 backend must be deployed. In the Discord Developer Portal add this OAuth2 redirect URL:
 
-The site uses hash routing, so it works correctly from a GitHub Pages repository sub-path.
+```text
+https://lrers-discord-bot-production.up.railway.app/api/v1/auth/callback
+```
 
-## API
+Add `DISCORD_CLIENT_SECRET` to Railway. `DISCORD_CLIENT_ID`, `WEBSITE_URL`, `PUBLIC_BASE_URL`, and `DISCORD_REDIRECT_URI` may be overridden, but the current LRERS deployment has safe defaults for the existing application/domain.
 
-`assets/js/config.js` points to the existing Railway service:
+Admin authorization uses `BOT_OWNER_ID`, Discord Administrator permission, or IDs from `ADMIN_ROLE_IDS`.
+
+## Website API
+
+`assets/js/config.js` points at:
 
 ```text
 https://lrers-discord-bot-production.up.railway.app
 ```
-
-The matching Discord Bot v0.2.5 backend update adds the public read-only endpoints required by this site.

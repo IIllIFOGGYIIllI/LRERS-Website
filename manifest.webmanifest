@@ -3,7 +3,7 @@
   "short_name": "LRERS",
   "start_url": "./#/overview",
   "display": "standalone",
-  "background_color": "#070a10",
-  "theme_color": "#090d14",
+  "background_color": "#06090f",
+  "theme_color": "#080c13",
   "icons": [{"src":"assets/img/logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }

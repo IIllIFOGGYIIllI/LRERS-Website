@@ -3,8 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090d14">
-  <meta name="description" content="Local Response ERS live server dashboard and administration portal.">
+  <meta name="theme-color" content="#080c13">
+  <meta name="description" content="Local Response ERS live FiveM server dashboard and administration portal.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://cdn.discordapp.com data:; connect-src https://lrers-discord-bot-production.up.railway.app; object-src 'none'; base-uri 'self'">
+  <meta property="og:title" content="Local Response ERS">
+  <meta property="og:description" content="Live server operations, players, resources and administration for Local Response ERS.">
+  <meta property="og:image" content="https://iillifoggyillli.github.io/LRERS-Website/assets/img/lrers-server-logo.jpg">
+  <meta property="og:type" content="website">
   <title>Local Response ERS</title>
   <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
@@ -17,7 +22,7 @@
         <img src="assets/img/logo.svg" alt="" class="brand-logo">
         <div>
           <strong>Local Response ERS</strong>
-          <span>Server Operations</span>
+          <span>Operations Platform</span>
         </div>
       </div>
       <nav class="nav" id="nav">
@@ -26,10 +31,10 @@
         <a href="#/players" data-route="players"><span>♟</span> Players</a>
         <a href="#/resources" data-route="resources"><span>▦</span> Resources</a>
         <div class="nav-divider">Administration</div>
-        <a href="#/admin" data-route="admin"><span>⚙</span> Admin Centre</a>
-        <a href="#/audit" data-route="audit"><span>≡</span> Audit Log</a>
+        <a href="#/admin" data-route="admin" data-admin-nav><span>⚙</span> Admin Centre</a>
+        <a href="#/audit" data-route="audit" data-admin-nav><span>≡</span> Audit Log</a>
         <a href="#/integrations" data-route="integrations"><span>⌘</span> Integrations</a>
-        <a href="#/settings" data-route="settings"><span>⚒</span> Settings</a>
+        <a href="#/settings" data-route="settings" data-admin-nav><span>⚒</span> Settings</a>
       </nav>
       <div class="sidebar-footer">
         <span class="dot" id="apiDot"></span>
@@ -46,12 +51,13 @@
         </div>
         <div class="topbar-actions">
           <div class="server-pill" id="serverPill"><span class="dot"></span><span>Loading</span></div>
-          <a class="button ghost" id="connectTop" href="#" target="_blank" rel="noopener">Connect</a>
+          <a class="button ghost connect-top" id="connectTop" href="#" target="_blank" rel="noopener">Connect</a>
+          <div id="authArea" class="auth-area"></div>
         </div>
       </header>
       <main id="app" class="content" aria-live="polite"></main>
       <footer class="footer">
-        <span>Local Response ERS Website <b id="websiteVersion">v0.1.0</b></span>
+        <span>Local Response ERS Website <b id="websiteVersion">v0.2.0</b></span>
         <span id="lastUpdated">Waiting for live data…</span>
       </footer>
     </section>
