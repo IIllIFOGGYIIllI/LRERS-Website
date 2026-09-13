@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.0
+
+- Rebuilt the authenticated Admin Centre into a practical live Operations Centre.
+- Added protected allowlisted resource start, stop and restart controls.
+- Added resource controls directly to both Admin Centre and Resource Directory.
+- Added confirmation prompts for disruptive resource and announcement operations.
+- Added live server-session details and allowlisted-resource summary to Admin Centre.
+- Added recent audit activity directly to Admin Centre.
+- Expanded Audit Log with actor names, search, status/category filters and manual refresh.
+- Admin Centre now keeps resource and audit data fresh automatically while open.
+- Preserved exact FiveM player names, Discord sign-in and LRERS branding.
+
 ## v0.2.1
 
 - Replaced generic shield branding with the actual Local Response ERS server artwork.

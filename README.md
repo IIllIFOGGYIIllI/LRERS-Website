@@ -1,10 +1,20 @@
 # LRERS Website
 
-GitHub Pages frontend for **Local Response ERS**.
+GitHub Pages operations frontend for **Local Response ERS**.
 
-## v0.2.1
+## v0.3.0
 
-The website now includes the branded LRERS operations experience, live FiveM data, Discord OAuth sign-in UI, permission-aware admin surfaces, authenticated in-game announcements, protected allowlisted resource restarts, and the runtime audit log.
+The authenticated Admin Centre is now a working operations surface rather than a placeholder. It includes:
+
+- Discord OAuth owner/admin identity
+- live FiveM server session overview
+- in-game broadcast announcements
+- deny-by-default resource start / stop / restart controls
+- quick allowlisted-resource controls in Admin Centre
+- full resource directory controls
+- recent audit activity on the Admin Centre
+- searchable/filterable authenticated Audit Log
+- LRERS server artwork and emergency red/blue branding
 
 ## Architecture
 
@@ -19,19 +29,21 @@ Railway (LRERS Discord Bot/API)
 LRERS_DiscordBridge -> FiveM / txAdmin / LRERS resources
 ```
 
-The public website contains no bot tokens, bridge secrets, Discord OAuth client secrets, or FiveM identifiers. Discord authorization codes are exchanged by Railway. The browser receives only an opaque LRERS session token kept in `sessionStorage` for the current browser tab.
+The public website contains no bot tokens, bridge secrets, Discord OAuth client secrets, or private FiveM identifiers. Discord authorization codes are exchanged by Railway. The browser receives only an opaque LRERS session token kept in `sessionStorage` for the current browser tab.
 
-## Discord OAuth setup
+## Resource control safety
 
-The matching LRERS Discord Bot v0.3.0 backend must be deployed. In the Discord Developer Portal add this OAuth2 redirect URL:
+Only resources explicitly allowlisted by `LRERS_DiscordBridge` expose remote operations. `LRERS_DiscordBridge` itself remains restart-only. Every action is checked against the authenticated Discord admin session, sent through the outbound action queue, acknowledged by FiveM and recorded in the runtime audit trail.
+
+## Discord OAuth
+
+OAuth2 callback:
 
 ```text
 https://lrers-discord-bot-production.up.railway.app/api/v1/auth/callback
 ```
 
-Add `DISCORD_CLIENT_SECRET` to Railway. `DISCORD_CLIENT_ID`, `WEBSITE_URL`, `PUBLIC_BASE_URL`, and `DISCORD_REDIRECT_URI` may be overridden, but the current LRERS deployment has safe defaults for the existing application/domain.
-
-Admin authorization uses `BOT_OWNER_ID`, Discord Administrator permission, or IDs from `ADMIN_ROLE_IDS`.
+Railway requires `DISCORD_CLIENT_SECRET`. Admin authorization uses `BOT_OWNER_ID`, Discord Administrator permission, or IDs from `ADMIN_ROLE_IDS`.
 
 ## Website API
 
@@ -40,10 +52,3 @@ Admin authorization uses `BOT_OWNER_ID`, Discord Administrator permission, or ID
 ```text
 https://lrers-discord-bot-production.up.railway.app
 ```
-
-
-### v0.2.1 hotfix
-
-- Uses the actual Local Response ERS server artwork for sidebar, favicon/PWA icon and Overview hero branding.
-- Corrects the canonical GitHub Pages owner URL used by social metadata.
-- Bumps the service-worker cache so browsers receive the new branding immediately.

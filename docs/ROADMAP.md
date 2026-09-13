@@ -14,11 +14,11 @@
 - Opaque browser session exchange
 
 ## Phase 3 - Administration — IN PROGRESS
-- Authenticated in-game announcements
-- Allowlisted resource restart controls
-- Runtime audit history
+- Authenticated in-game announcements — COMPLETE
+- Allowlisted resource start/stop/restart controls — COMPLETE
+- Runtime audit history — COMPLETE
+- Search/filter audit experience — COMPLETE
 - Player lookup/moderation
-- Resource start/stop controls
 - Server restart/maintenance controls
 - Durable audit history
 

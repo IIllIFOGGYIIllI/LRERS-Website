@@ -1,5 +1,5 @@
 window.LRERS_CONFIG = Object.freeze({
-  websiteVersion: "0.2.1",
+  websiteVersion: "0.3.0",
   apiBase: "https://lrers-discord-bot-production.up.railway.app",
   refreshMs: 30000,
   resourceRefreshMs: 60000,

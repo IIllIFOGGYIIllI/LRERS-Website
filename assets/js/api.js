@@ -23,6 +23,11 @@
     return data;
   }
 
+  const resourceAction = (resource, action) => request(
+    `/api/v1/admin/resources/${encodeURIComponent(resource)}/${action}`,
+    { method: "POST" }
+  );
+
   window.LRERS_API = Object.freeze({
     meta: () => request("/api/v1/public/meta", { auth: false }),
     status: () => request("/api/v1/public/status", { auth: false }),
@@ -31,8 +36,10 @@
     exchange: code => request("/api/v1/auth/exchange", { method: "POST", body: JSON.stringify({ code }), auth: false }),
     me: () => request("/api/v1/auth/me"),
     logout: () => request("/api/v1/auth/logout", { method: "POST" }),
-    audit: (limit = 30) => request(`/api/v1/admin/audit?limit=${encodeURIComponent(limit)}`),
-    restartResource: resource => request(`/api/v1/admin/resources/${encodeURIComponent(resource)}/restart`, { method: "POST" }),
+    audit: (limit = 50) => request(`/api/v1/admin/audit?limit=${encodeURIComponent(limit)}`),
+    startResource: resource => resourceAction(resource, "start"),
+    stopResource: resource => resourceAction(resource, "stop"),
+    restartResource: resource => resourceAction(resource, "restart"),
     announce: message => request("/api/v1/admin/announce", { method: "POST", body: JSON.stringify({ message }) }),
     saveSession: value => value ? sessionStorage.setItem(cfg.sessionStorageKey, value) : sessionStorage.removeItem(cfg.sessionStorageKey),
     hasSession: () => Boolean(token())
