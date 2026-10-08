@@ -1,16 +1,18 @@
 (() => {
   const cfg = window.LRERS_CONFIG;
   const api = window.LRERS_API;
-  const views = window.LRERS_VIEWS;
+  const views = Object.assign(window.LRERS_VIEWS, window.LRERS_COMMUNITY_VIEWS);
   const app = document.getElementById("app");
   const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const state = { meta: null, status: null, resources: null, audit: null, auth: { enabled: false, user: null }, lastFetch: 0, resourcesFetched: 0, auditFetched: 0 };
+  const state = { meta: null, status: null, resources: null, audit: null, community: null, communityError: null, selectedPanel: null, panelTemplate: "rules", auth: { enabled: false, user: null }, lastFetch: 0, resourcesFetched: 0, auditFetched: 0 };
   const routes = {
     overview: ["Overview", "Live server operations at a glance."],
     server: ["Server", "FiveM status, restart schedule and connection details."],
     players: ["Players", "Current roster and player administration."],
-    resources: ["Resources", "Live FiveM resource inventory and protected controls."],
+    resources: ["Resources", "Read-only FiveM resource inventory. Use txAdmin for changes."],
     admin: ["Admin Centre", "Discord-authenticated LRERS administration."],
+    discord: ["Discord Management", "Welcome messages, member settings and roles."],
+    panels: ["Panel Manager", "Dedicated Discord panels, content and publishing."],
     audit: ["Audit Log", "Staff actions, automation and server-operation history."],
     integrations: ["Integrations", "Connected LRERS, FiveM and infrastructure systems."],
     settings: ["Settings", "Server-scoped configuration and permissions."]
@@ -21,7 +23,8 @@
     return routes[value] ? value : cfg.defaultRoute;
   }
   const adminDataRoute = () => ["admin", "audit"].includes(route());
-  const resourceDataRoute = () => ["admin", "resources"].includes(route());
+  const resourceDataRoute = () => ["resources"].includes(route());
+  const communityRoute = () => ["discord", "panels"].includes(route());
 
   function setApiState(ok) {
     document.getElementById("apiDot").className = `dot ${ok ? "online" : "offline"}`;
@@ -63,7 +66,7 @@
   function login() { location.href = api.loginUrl(); }
   async function logout() {
     try { await api.logout(); } catch (err) { console.warn(err); }
-    api.saveSession(""); state.auth.user = null; state.audit = null; toast("Signed out of LRERS"); render();
+    api.saveSession(""); state.auth.user = null; state.audit = null; state.community = null; toast("Signed out of LRERS"); render();
   }
   async function loadAuth() {
     state.auth.enabled = Boolean(state.meta?.discord_auth_enabled);
@@ -93,26 +96,51 @@
     catch (err) { console.warn(err); state.audit = { entries: [] }; }
   }
 
-  async function runResourceAction(button) {
-    const resource = button.dataset.resource;
-    const action = button.dataset.resourceAction;
-    if (!resource || !["start", "stop", "restart"].includes(action)) return;
-    const verb = action[0].toUpperCase() + action.slice(1);
-    const warning = action === "stop" ? `Stop ${resource}? This can affect dependent resources.` : `${verb} ${resource}?`;
-    if (!confirm(warning)) return;
-    const original = button.textContent;
-    button.disabled = true; button.textContent = `${verb}ing…`;
-    try {
-      const fn = action === "start" ? api.startResource : action === "stop" ? api.stopResource : api.restartResource;
-      const result = await fn(resource);
-      toast(result.message || `${resource} ${action} requested`);
-      await loadAudit(true);
-      await refresh(true);
-    } catch (err) {
-      toast(`${verb} failed: ${err.message}`);
-    } finally {
-      button.disabled = false; button.textContent = original;
-    }
+  async function loadCommunity() {
+    if (!state.auth.user?.is_admin) { state.community = null; return; }
+    try { state.community = await api.discordContext(); state.communityError = null; }
+    catch (err) { state.communityError = err.message; console.warn('Community load failed:', err); }
+  }
+
+  async function communityWrite(promise, success) {
+    try { await promise; toast(success); await loadCommunity(); await loadAudit(true); render(); }
+    catch (err) { toast(`Discord action failed: ${err.message}`); }
+  }
+
+  function bindCommunity() {
+    document.querySelectorAll('[data-reload-discord]').forEach(el => el.addEventListener('click', async () => { await loadCommunity(); render(); }));
+    document.querySelectorAll('[data-discord-setup]').forEach(el => el.addEventListener('click', () => {
+      if (!confirm('Create the private LRERS bot configuration channel?')) return;
+      communityWrite(api.discordSetup(), 'Discord configuration ready');
+    }));
+    document.querySelectorAll('[data-community-message]').forEach(form => form.addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(form); const kind = form.dataset.communityMessage;
+      communityWrite(api.discordMessage(kind, {enabled: data.has('enabled'), channel_id: data.get('channel_id') || null, message: data.get('message')}), `${kind} settings saved`);
+    }));
+    const autoRole = document.getElementById('autoRoleForm');
+    if (autoRole) autoRole.addEventListener('submit', event => {
+      event.preventDefault(); const data = new FormData(autoRole);
+      communityWrite(api.discordAutoRole(data.get('role_id') || null), 'Automatic role setting saved');
+    });
+    document.querySelectorAll('[data-panel-select]').forEach(el => el.addEventListener('click', () => {state.selectedPanel=el.dataset.panelSelect;state.panelTemplate='';render();}));
+    document.querySelectorAll('[data-panel-template]').forEach(el => el.addEventListener('click', () => {state.selectedPanel=null;state.panelTemplate=el.dataset.panelTemplate;render();}));
+    document.querySelectorAll('[data-panel-new]').forEach(el => el.addEventListener('click', () => {state.selectedPanel=null;state.panelTemplate='';render();}));
+    const panelForm = document.getElementById('panelEditor');
+    if (panelForm) panelForm.addEventListener('submit', async event => {
+      event.preventDefault(); const data=new FormData(panelForm); const id=String(data.get('panel_id')||'').trim();
+      const kind=String(data.get('kind')||'information');
+      const roles=kind==='information' ? [] : data.getAll('role_ids').slice(0,8);
+      const payload={title:data.get('title'),body:data.get('body'),kind,color:data.get('color'),role_ids:roles};
+      try { await api.discordSavePanel(id, payload); state.selectedPanel=id;state.panelTemplate=''; toast('Panel saved as a draft');await loadCommunity();await loadAudit(true);render(); }
+      catch (err) {toast(`Panel save failed: ${err.message}`);}
+    });
+    const publishForm = document.getElementById('publishPanelForm');
+    if (publishForm) publishForm.addEventListener('submit', event => {
+      event.preventDefault(); const data = new FormData(publishForm);const id=state.selectedPanel;
+      if (!id || !confirm(`Publish ${id} to the selected Discord channel?`)) return;
+      communityWrite(api.discordPublishPanel(id, data.get('channel_id')), 'Discord panel published/updated');
+    });
   }
 
   function applyAuditFilters() {
@@ -138,7 +166,7 @@
       try { await navigator.clipboard.writeText(text); toast("F8 connect command copied"); }
       catch { toast("Copy failed — select the command manually"); }
     }));
-    document.querySelectorAll("[data-resource-action]").forEach(btn => btn.addEventListener("click", () => runResourceAction(btn)));
+    bindCommunity();
 
     const form = document.getElementById("announceForm");
     if (form) form.addEventListener("submit", async e => {
@@ -180,7 +208,8 @@
       if (adminDataRoute()) await loadAudit();
       state.lastFetch = now; setApiState(true);
       document.getElementById("lastUpdated").textContent = `Live data updated ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-      render();
+      if (communityRoute() && document.activeElement?.closest("form")) updateChrome();
+      else render();
     } catch (err) {
       console.error(err); setApiState(false);
       if (!state.meta) app.innerHTML = `<section class="panel error-panel"><span class="eyebrow">CONNECTION ERROR</span><h2>Railway API unavailable</h2><p>The website is online, but live FiveM data could not be loaded. The dashboard will retry automatically.</p></section>`;
@@ -190,6 +219,7 @@
 
   window.addEventListener("hashchange", async () => {
     if (adminDataRoute()) await loadAudit(true);
+    if (communityRoute()) await loadCommunity();
     render();
     if (resourceDataRoute()) refresh(true);
     document.getElementById("sidebar").classList.remove("open");
@@ -198,7 +228,7 @@
   document.getElementById("menuButton").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
   document.getElementById("websiteVersion").textContent = `v${cfg.websiteVersion}`;
   if (!location.hash) location.hash = `#/${cfg.defaultRoute}`;
-  (async () => { await refresh(resourceDataRoute()); await consumeAuthCode(); await loadAuth(); if (adminDataRoute()) await loadAudit(true); render(); })();
+  (async () => { await refresh(resourceDataRoute()); await consumeAuthCode(); await loadAuth(); if (adminDataRoute()) await loadAudit(true); if (communityRoute()) await loadCommunity(); render(); })();
   setInterval(() => refresh(resourceDataRoute()), cfg.refreshMs);
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js").catch(console.warn);
 })();

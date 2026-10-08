@@ -34,19 +34,6 @@
     return `<div class="table-wrap"><table><thead><tr><th>ID</th><th>Player</th><th>Ping</th></tr></thead><tbody>${rows}</tbody></table></div>${compact ? "" : `<p class="table-note">Live player data refreshes automatically.</p>`}`;
   }
 
-  function resourceControls(r, canControl, compact = false) {
-    if (!canControl) return (r.start_allowed || r.stop_allowed || r.restart_allowed) ? '<span class="tag good">Allowlisted</span>' : '<span class="muted">Protected</span>';
-    const name = escapeHtml(r.name);
-    const state = String(r.state || "unknown").toLowerCase();
-    const buttons = [];
-    if (r.start_allowed && state !== "started") buttons.push(`<button class="button mini success" data-resource-action="start" data-resource="${name}">Start</button>`);
-    if (r.restart_allowed && state === "started") buttons.push(`<button class="button mini" data-resource-action="restart" data-resource="${name}">Restart</button>`);
-    if (r.stop_allowed && state === "started") buttons.push(`<button class="button mini danger" data-resource-action="stop" data-resource="${name}">Stop</button>`);
-    if (!buttons.length && r.restart_allowed) buttons.push(`<button class="button mini" data-resource-action="restart" data-resource="${name}">Restart</button>`);
-    if (!buttons.length) return '<span class="muted">Protected</span>';
-    return `<div class="resource-actions ${compact ? 'compact' : ''}">${buttons.join("")}</div>`;
-  }
-
   function auditRows(entries, limit = entries.length) {
     return entries.slice(0, limit).map(e => `<tr data-audit-row data-audit-status="${escapeHtml(String(e.status || '').toLowerCase())}" data-audit-category="${escapeHtml(String(e.category || '').toLowerCase())}"><td>${new Date(e.created_at).toLocaleString()}</td><td><span class="audit-status ${escapeHtml(String(e.status||'').toLowerCase())}">${escapeHtml(e.status)}</span></td><td>${escapeHtml(e.actor || 'System')}</td><td><code class="category-code">${escapeHtml(e.category)}</code></td><td>${escapeHtml(e.summary)}</td><td>${escapeHtml(e.result || '—')}</td></tr>`).join("");
   }
@@ -70,8 +57,8 @@
       </section>
       <section class="panel"><div class="panel-head"><div><span class="eyebrow">OPERATIONS PLATFORM</span><h3>LRERS Control Surface</h3></div><span class="tag ${auth?.user?.is_admin ? 'good' : ''}">${auth?.user?.is_admin ? 'Admin Connected' : 'Building'}</span></div><div class="feature-grid">${[
         ["Discord Authentication",auth?.user ? `Signed in as ${escapeHtml(auth.user.display_name)}.` : "Secure Discord OAuth and LRERS permission verification."],
-        ["Player Administration","Lookup, moderation, notes and history."],
-        ["Resource Control",auth?.user?.is_admin ? "Protected start, stop and restart controls are available." : "Protected start, stop, restart and health monitoring."],
+        ["Player Administration","Lookup, moderation, notes and history — later phase."],
+        ["Discord Management","Member welcome, verification, roles and dedicated panels."],
         ["Audit Centre",auth?.user?.is_admin ? "Authenticated administration history is available." : "Staff and automation action history."],
         ["LRERS Characters","Character, duty, department and rank integration."],
         ["Custom Resources","VehicleSpawner, SignalPreempt, ClearPath AI and more."]
@@ -88,27 +75,21 @@
     return `<section class="panel"><div class="panel-head"><div><span class="eyebrow">LIVE ROSTER</span><h3>Players <span class="muted">${status?.players ?? 0}/${status?.max_players ?? 0}</span></h3></div>${statusBadge(Boolean(status?.online))}</div>${playerTable(status)}</section>${adminNote}`;
   }
 
-  function resources({resources, auth}) {
+  function resources({resources}) {
     const items = Array.isArray(resources?.resources) ? resources.resources : [];
-    const counts = items.reduce((a,r)=>{ const s=(r.state||'unknown').toLowerCase(); a[s]=(a[s]||0)+1; return a; },{});
-    const canControl = Boolean(auth?.user?.is_admin);
-    const controlled = items.filter(r => r.start_allowed || r.stop_allowed || r.restart_allowed).length;
-    const rows = items.map(r => `<tr data-resource-row data-state="${escapeHtml(r.state)}"><td><b>${escapeHtml(r.name)}</b></td><td><span class="resource-state ${escapeHtml(r.state)}">${escapeHtml(r.state)}</span></td><td>${resourceControls(r, canControl)}</td></tr>`).join("");
-    const gate = canControl ? `<section class="panel control-note"><span class="eyebrow">AUTHENTICATED CONTROL</span><h3>Protected resource operations enabled</h3><p>Only bridge-allowlisted resources can be started, stopped or restarted. The bridge itself remains restart-only. Every action is attributed to your Discord account and written to the audit trail.</p></section>` : accessPanel(auth, "Resource Control");
-    return `<section class="metrics-grid compact">${card("Started", counts.started || 0)}${card("Stopped", counts.stopped || 0)}${card("Remote Control", controlled)}${card("Total", items.length)}</section><section class="panel"><div class="panel-head"><div><span class="eyebrow">FIVEM RESOURCES</span><h3>Resource Directory</h3></div><input id="resourceSearch" class="search" placeholder="Search resources…" autocomplete="off"></div>${items.length ? `<div class="table-wrap"><table><thead><tr><th>Resource</th><th>State</th><th>Remote Control</th></tr></thead><tbody id="resourceRows">${rows}</tbody></table></div>` : empty("No resource data", "Resource information will appear when the server bridge reports it.")}</section>${gate}`;
+    const counts = items.reduce((a,r)=>{const k=(r.state||'unknown').toLowerCase();a[k]=(a[k]||0)+1;return a;},{});
+    const rows = items.map(r=>`<tr data-resource-row><td><b>${escapeHtml(r.name)}</b></td><td><span class="resource-state ${escapeHtml(r.state)}">${escapeHtml(r.state)}</span></td></tr>`).join('');
+    return `<section class="panel"><div class="panel-head"><div><span class="eyebrow">TXADMIN AUTHORITY</span><h3>Read-only Resource Inventory</h3></div></div><p>Use txAdmin or the FiveM console for starting, stopping and restarting resources.</p></section><section class="metrics-grid compact">${card('Started', counts.started||0)}${card('Stopped',counts.stopped||0)}${card('Total',items.length)}</section><section class="panel"><div class="panel-head"><h3>Resource Directory</h3><input id="resourceSearch" class="search" placeholder="Search resources…"></div>${items.length?`<div class="table-wrap"><table><thead><tr><th>Resource</th><th>State</th></tr></thead><tbody>${rows}</tbody></table></div>`:empty('No resources reported','Wait for the FiveM bridge.')}</section>`;
   }
 
-  function admin({auth, status, resources, audit}) {
-    const gate = accessPanel(auth, "Admin Centre"); if (gate) return gate;
-    const items = Array.isArray(resources?.resources) ? resources.resources : [];
-    const controllable = items.filter(r => r.start_allowed || r.stop_allowed || r.restart_allowed);
-    const entries = Array.isArray(audit?.entries) ? audit.entries : [];
-    const quickRows = controllable.slice(0, 10).map(r => `<tr><td><b>${escapeHtml(r.name)}</b></td><td><span class="resource-state ${escapeHtml(r.state)}">${escapeHtml(r.state)}</span></td><td>${resourceControls(r, true, true)}</td></tr>`).join("");
-    return `<section class="admin-hero panel"><div><span class="eyebrow">AUTHENTICATED ADMINISTRATION</span><h2>Operations Centre</h2><p>Welcome, ${escapeHtml(auth.user.display_name)}. These controls execute through Railway and the outbound LRERS FiveM bridge, with every operation recorded in the audit trail.</p></div><div class="identity-card">${auth.user.avatar_url ? `<img src="${escapeHtml(auth.user.avatar_url)}" alt="">` : ''}<div><strong>${escapeHtml(auth.user.display_name)}</strong><span>${auth.user.is_owner ? 'Bot Owner' : 'Administrator'}</span></div></div></section>
-      <section class="metrics-grid compact">${card("Server", status?.online ? "Online" : "Offline")}${card("Players", `${status?.players ?? 0}/${status?.max_players ?? 0}`)}${card("Next Restart", restartText(status))}${card("Controllable", controllable.length)}</section>
-      <section class="grid two"><article class="panel"><div class="panel-head"><div><span class="eyebrow">IN-GAME</span><h3>Broadcast Announcement</h3></div></div><form id="announceForm" class="stack-form"><label for="announceMessage">Message to all connected players</label><textarea id="announceMessage" maxlength="300" placeholder="Enter an LRERS server announcement…" required></textarea><div class="form-foot"><span class="muted">Sent as an LRERS chat announcement.</span><button class="button" type="submit">Send Announcement</button></div></form></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">SERVER SESSION</span><h3>Live Operations</h3></div>${statusBadge(Boolean(status?.online))}</div><dl class="detail-list"><div><dt>Uptime</dt><dd>${status?.online ? formatDuration(status.uptime_seconds) : '—'}</dd></div><div><dt>Players</dt><dd>${status?.players ?? 0}/${status?.max_players ?? 0}</dd></div><div><dt>Game Build</dt><dd>${escapeHtml(status?.game_build || '—')}</dd></div><div><dt>Next Restart</dt><dd>${restartText(status)}</dd></div></dl></article></section>
-      <section class="panel"><div class="panel-head"><div><span class="eyebrow">RESOURCE CONTROL</span><h3>Allowlisted Resources</h3></div><a class="text-link" href="#/resources">Open full directory →</a></div>${quickRows ? `<div class="table-wrap"><table><thead><tr><th>Resource</th><th>State</th><th>Actions</th></tr></thead><tbody>${quickRows}</tbody></table></div>` : empty("No resources allowlisted", "Add specific resources to the bridge control allowlist before remote controls are exposed.")}</section>
-      <section class="panel"><div class="panel-head"><div><span class="eyebrow">RECENT ADMINISTRATION</span><h3>Audit Activity</h3></div><a class="text-link" href="#/audit">View full audit →</a></div>${entries.length ? `<div class="table-wrap"><table><thead><tr><th>When</th><th>Status</th><th>Actor</th><th>Category</th><th>Action</th><th>Result</th></tr></thead><tbody>${auditRows(entries, 8)}</tbody></table></div>` : empty("No recent activity", "Administrative actions will appear here as they occur.")}</section>`;
+  function admin({auth,status,audit}) {
+    const gate = accessPanel(auth, 'Admin Centre'); if(gate) return gate;
+    const entries = Array.isArray(audit?.entries)?audit.entries:[];
+    return `<section class="admin-hero panel"><div><span class="eyebrow">LRERS ADMINISTRATION</span><h2>Operations Centre</h2><p>Welcome, ${escapeHtml(auth.user.display_name)}. Discord community administration now has its own dedicated controls, while FiveM resource management stays in txAdmin.</p></div><div class="identity-card">${auth.user.avatar_url?`<img src="${escapeHtml(auth.user.avatar_url)}" alt="">`:''}<div><strong>${escapeHtml(auth.user.display_name)}</strong><span>${auth.user.is_owner?'Bot Owner':'Administrator'}</span></div></div></section>
+    <section class="metrics-grid compact">${card('Server',status?.online?'Online':'Offline')}${card('Players',`${status?.players??0}/${status?.max_players??0}`)}${card('Next Restart',restartText(status))}</section>
+    <section class="grid two"><article class="panel"><div class="panel-head"><div><span class="eyebrow">DISCORD</span><h3>Community Management</h3></div></div><div class="action-links"><a href="#/discord" class="action-link"><b>Member Settings</b><span>Welcome, goodbye and automatic roles</span></a><a href="#/panels" class="action-link"><b>Panel Manager</b><span>Rules, Information, Verification and role panels</span></a><a href="#/audit" class="action-link"><b>Audit Activity</b><span>Review admin and panel actions</span></a></div></article>
+    <article class="panel"><div class="panel-head"><div><span class="eyebrow">IN-GAME</span><h3>Broadcast Announcement</h3></div></div><form id="announceForm" class="stack-form"><label for="announceMessage">Message to connected players</label><textarea id="announceMessage" maxlength="300" required></textarea><div class="form-foot"><span class="muted">The existing FiveM announcement integration is retained.</span><button class="button" type="submit">Send Announcement</button></div></form></article></section>
+    <section class="panel"><div class="panel-head"><h3>Recent Audit Activity</h3><a href="#/audit" class="text-link">View all →</a></div>${entries.length?`<div class="table-wrap"><table><thead><tr><th>When</th><th>Status</th><th>Actor</th><th>Category</th><th>Action</th><th>Result</th></tr></thead><tbody>${auditRows(entries,8)}</tbody></table></div>`:empty('No activity','Actions will appear here as they occur.')}</section>`;
   }
 
   function audit({auth, audit}) {
@@ -121,7 +102,7 @@
 
   const planned = (title, description, features) => `<section class="panel"><span class="eyebrow">PLANNED MODULE</span><h2>${title}</h2><p>${description}</p><div class="feature-grid">${features.map(x=>`<div class="feature"><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join("")}</div></section>`;
   const integrations = ({auth}) => planned("Integrations", "A single view of the systems connected to Local Response ERS.", [["Discord",auth?.user ? `Signed in as ${escapeHtml(auth.user.display_name)}.` : "OAuth identity and role-backed permissions."],["txAdmin","Scheduled restarts and infrastructure control."],["FiveM Bridge","Live server telemetry and protected action queue."],["LRERS","Characters, duty, jobs and permissions."],["VehicleSpawner","Garages, saved builds and diagnostics."],["SignalPreempt / ClearPath AI","Emergency-services traffic and AI integrations."]]);
-  function settings({auth}) { const gate = accessPanel(auth, "Settings"); if (gate) return gate; return planned("Settings", "Server-scoped configuration will progressively move here instead of scattered config edits.", [["Server Metadata","Display name, capacity and connection details."],["Permissions","Discord role mappings and admin access."],["Notifications","Operational alert routing."],["Resource Policy","Remote-control allowlists."],["Website","Branding and dashboard behaviour."],["Safety","Confirmation and audit policy."]]); }
+  function settings({auth}) { const gate = accessPanel(auth, "Settings"); if (gate) return gate; return planned("Settings", "Server-scoped configuration will progressively move here instead of scattered config edits.", [["Server Metadata","Display name, capacity and connection details."],["Permissions","Discord role mappings and admin access."],["Notifications","Operational alert routing."],["Resource Policy","Resource operations remain in txAdmin."],["Website","Branding and dashboard behaviour."],["Safety","Confirmation and audit policy."]]); }
 
   window.LRERS_VIEWS = { overview, server, players, resources, admin, audit, integrations, settings };
 })();

@@ -6,3 +6,18 @@
 @media(max-width:620px){.topbar{padding:14px 16px}.content{padding:20px 16px 36px}.page-heading p{display:none}.metrics-grid{grid-template-columns:1fr 1fr;gap:10px}.metric-card{padding:15px}.metric-card strong{font-size:19px}.hero{padding:20px;flex-direction:column}.hero-branded{padding:0}.hero-copy{padding:22px}.hero-copy h2,.panel h2{font-size:23px}.hero-art{min-height:180px}.feature-grid{grid-template-columns:1fr}.footer{padding:16px;flex-direction:column}.panel{padding:17px}.panel-head{flex-wrap:wrap}.search{width:100%}.admin-hero{flex-direction:column;align-items:flex-start}.identity-card{width:100%}}
 .button.success{background:linear-gradient(120deg,#178e58,#28b876);box-shadow:none}.resource-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.resource-actions.compact{gap:5px}.resource-actions.compact .button{padding:6px 8px}.form-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.form-foot .button{margin-left:auto}.audit-head{align-items:center}.audit-tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.audit-tools .search{width:180px}.select{background:#080d14;border:1px solid #2b3c53;border-radius:9px;color:var(--text);padding:9px 11px;outline:none;font:inherit;font-size:11px}.select:focus{border-color:#4f8ee6;box-shadow:0 0 0 3px rgba(45,125,255,.08)}.category-code{display:inline-block;min-width:0;padding:5px 7px;font-size:10px;white-space:nowrap}.table-wrap tr[hidden]{display:none}.admin-hero h2{font-size:25px}.admin-hero p{max-width:780px}.audit-tools .button{align-self:stretch}.resource-state.starting,.resource-state.stopping{color:#ffd780;background:rgba(248,197,93,.10)}
 @media(max-width:760px){.audit-tools{width:100%;justify-content:stretch}.audit-tools .search,.audit-tools .select,.audit-tools .button{width:100%}.form-foot{align-items:stretch}.form-foot .button{margin-left:0;width:100%}.resource-actions{min-width:145px}}
+
+/* Discord community management */
+.discord-form input[type="checkbox"],.role-checklist input[type="checkbox"]{accent-color:var(--blue);margin-right:7px}
+.discord-form select,.stack-form select,.stack-form input.search{width:100%;max-width:none}
+.stack-form input.search.full{width:100%}
+.role-checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;padding:12px;background:#080d14;border:1px solid var(--line);border-radius:10px;max-height:230px;overflow:auto}
+.role-checklist label{padding:5px 8px;background:#0c1521;border-radius:6px}
+.panel-catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.panel-choice{color:var(--text);text-align:left;background:#0a131f;border:1px solid #293c55;border-radius:10px;padding:14px;cursor:pointer}
+.panel-choice.selected,.panel-choice:hover{border-color:#6e9fe8;background:#15253a}
+.panel-choice strong,.panel-choice small{display:block}.panel-choice small{color:var(--muted);margin-top:6px}
+.template-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.publish-form{margin-top:30px;border-top:1px solid var(--line);padding-top:22px}
+.config-note{border-color:rgba(45,125,255,.35)}
+.stack-form textarea{width:100%;min-height:120px}

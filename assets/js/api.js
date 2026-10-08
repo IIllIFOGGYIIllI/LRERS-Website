@@ -23,11 +23,6 @@
     return data;
   }
 
-  const resourceAction = (resource, action) => request(
-    `/api/v1/admin/resources/${encodeURIComponent(resource)}/${action}`,
-    { method: "POST" }
-  );
-
   window.LRERS_API = Object.freeze({
     meta: () => request("/api/v1/public/meta", { auth: false }),
     status: () => request("/api/v1/public/status", { auth: false }),
@@ -37,10 +32,13 @@
     me: () => request("/api/v1/auth/me"),
     logout: () => request("/api/v1/auth/logout", { method: "POST" }),
     audit: (limit = 50) => request(`/api/v1/admin/audit?limit=${encodeURIComponent(limit)}`),
-    startResource: resource => resourceAction(resource, "start"),
-    stopResource: resource => resourceAction(resource, "stop"),
-    restartResource: resource => resourceAction(resource, "restart"),
     announce: message => request("/api/v1/admin/announce", { method: "POST", body: JSON.stringify({ message }) }),
+    discordContext: () => request("/api/v1/admin/discord"),
+    discordSetup: () => request("/api/v1/admin/discord/setup", { method: "POST", body: "{}" }),
+    discordMessage: (kind, data) => request(`/api/v1/admin/discord/messages/${kind}`, { method: "POST", body: JSON.stringify(data) }),
+    discordAutoRole: role_id => request("/api/v1/admin/discord/auto-role", { method: "POST", body: JSON.stringify({ role_id }) }),
+    discordSavePanel: (id, data) => request(`/api/v1/admin/discord/panels/${encodeURIComponent(id)}`, { method: "POST", body: JSON.stringify(data) }),
+    discordPublishPanel: (id, channel_id) => request(`/api/v1/admin/discord/panels/${encodeURIComponent(id)}/publish`, { method: "POST", body: JSON.stringify({ channel_id }) }),
     saveSession: value => value ? sessionStorage.setItem(cfg.sessionStorageKey, value) : sessionStorage.removeItem(cfg.sessionStorageKey),
     hasSession: () => Boolean(token())
   });
