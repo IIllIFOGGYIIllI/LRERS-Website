@@ -1,4 +1,4 @@
-const CACHE = "lrers-site-v0.4.0";
+const CACHE = "lrers-site-v0.5.0";
 const ASSETS = ["./","index.html","assets/css/styles.css","assets/js/config.js","assets/js/api.js","assets/js/views.js","assets/js/community-views.js","assets/js/app.js","assets/img/lrers-icon.png","assets/img/lrers-server-logo.png"];
 self.addEventListener("install", e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))); });
 self.addEventListener("activate", e => e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));

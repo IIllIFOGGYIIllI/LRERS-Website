@@ -127,10 +127,30 @@
     document.querySelectorAll('[data-panel-template]').forEach(el => el.addEventListener('click', () => {state.selectedPanel=null;state.panelTemplate=el.dataset.panelTemplate;render();}));
     document.querySelectorAll('[data-panel-new]').forEach(el => el.addEventListener('click', () => {state.selectedPanel=null;state.panelTemplate='';render();}));
     const panelForm = document.getElementById('panelEditor');
+    const body = panelForm?.querySelector('[data-panel-body]');
+    const length = panelForm?.querySelector('[data-panel-length]');
+    if (body && length) {
+      const updateLength = () => {length.textContent = `${body.value.length.toLocaleString()} / 15,000 characters (published in up to five messages)`;};
+      body.addEventListener('input', updateLength); updateLength();
+      const preview = panelForm.querySelector('[data-panel-preview]');
+      const titleInput = panelForm.querySelector('[name=title]');
+      const colorSelect = panelForm.querySelector('[name=color]');
+      const updatePreview = () => {
+        preview.querySelector('[data-preview-title]').textContent = titleInput.value || 'Panel title';
+        preview.querySelector('[data-preview-body]').textContent = body.value || 'Your approved panel content will appear here as you type.';
+        preview.dataset.color = colorSelect.value;
+      };
+      [body, titleInput, colorSelect].forEach(el => el.addEventListener('input', updatePreview));
+      colorSelect.addEventListener('change', updatePreview);
+      updatePreview();
+    }
     if (panelForm) panelForm.addEventListener('submit', async event => {
       event.preventDefault(); const data=new FormData(panelForm); const id=String(data.get('panel_id')||'').trim();
       const kind=String(data.get('kind')||'information');
-      const roles=kind==='information' ? [] : data.getAll('role_ids').slice(0,8);
+      const roles=kind==='information' ? [] : data.getAll('role_ids');
+      if (roles.length > 8) {toast('Choose no more than eight roles. Make a separate roles panel for another group.');return;}
+      if (kind==='verification' && roles.length !== 1) {toast('Choose exactly one verification role, such as Rules Read.');return;}
+      if (kind==='roles' && !roles.length) {toast('Choose at least one safely assignable role.');return;}
       const payload={title:data.get('title'),body:data.get('body'),kind,color:data.get('color'),role_ids:roles};
       try { await api.discordSavePanel(id, payload); state.selectedPanel=id;state.panelTemplate=''; toast('Panel saved as a draft');await loadCommunity();await loadAudit(true);render(); }
       catch (err) {toast(`Panel save failed: ${err.message}`);}

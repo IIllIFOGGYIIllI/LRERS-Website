@@ -21,3 +21,12 @@
 .publish-form{margin-top:30px;border-top:1px solid var(--line);padding-top:22px}
 .config-note{border-color:rgba(45,125,255,.35)}
 .stack-form textarea{width:100%;min-height:120px}
+
+/* v0.5.0 onboarding-panel text preview. Text is filled via textContent only. */
+.panel-preview{background:#080c13;border:1px solid #33485f;border-left:4px solid #2689e8;border-radius:10px;padding:17px;margin:14px 0;max-width:100%;overflow:hidden}
+.panel-preview[data-color="red"]{border-left-color:#ff425d}
+.panel-preview[data-color="neutral"]{border-left-color:#8292a7}
+.panel-preview-label{font-size:10px;letter-spacing:.09em;font-weight:700;color:var(--cyan)}
+.panel-preview strong{display:block;font-size:15px;margin:9px 0}
+.panel-preview pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:450px;overflow:auto;font:12px/1.55 system-ui,sans-serif;color:#dce6f5;margin:0 0 12px}
+.panel-preview small,[data-panel-length]{font-size:11px;color:var(--muted)}
